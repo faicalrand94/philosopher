@@ -6,13 +6,13 @@
 #    By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/06/16 17:06:02 by fbouibao          #+#    #+#              #
-#    Updated: 2021/06/16 17:10:47 by fbouibao         ###   ########.fr        #
+#    Updated: 2021/06/17 12:35:59 by fbouibao         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = philo
 
-FLAGS = -lpthread
+FLAGS = -g -lpthread -fsanitize=address
 
 SRC = philo.c
 
