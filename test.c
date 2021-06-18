@@ -38,6 +38,7 @@ int main()
     pthread_create(&p2, NULL, fun2, NULL);
     pthread_join(p1, NULL);
     printf("%d\n", i);
+    
     pthread_join(p2, NULL);
     printf("%d\n", i);
     //pthread_mutex_destroy(&mut);

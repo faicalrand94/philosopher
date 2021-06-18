@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:02:03 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/16 17:09:05 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/18 19:15:55 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <unistd.h>
 # include <stdlib.h>
+  #include <sys/time.h>
 
 typedef struct s_sort
 {
