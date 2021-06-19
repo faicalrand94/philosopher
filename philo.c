@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:01:49 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/19 21:31:01 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/19 21:51:51 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,9 @@ typedef struct s_philo
 	int iseating;
 	int issleeping;
 	int nbr_ph;
-	int time_to_die;
-	int time_to_eat;
-	int time_to_sleep;
+	size_t time_to_die;
+	size_t time_to_eat;
+	size_t time_to_sleep;
 }					t_philo;
 t_philo     *ph;
 
@@ -48,9 +48,9 @@ typedef struct s_philosopher
 	pthread_mutex_t *mut;
 	pthread_mutex_t message;
 	int nbr_ph;
-	int time_to_die;
-	int time_to_eat;
-	int time_to_sleep;
+	size_t time_to_die;
+	size_t time_to_eat;
+	size_t time_to_sleep;
 	size_t last_time_eat;
 }					t_philosopher;
 
@@ -285,9 +285,14 @@ if (ac > 4)
 			usleep(100);
     		gettimeofday(&tv,&tz);
     		time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
-			//fprintf(stderr,"==> %zu\n", time);
-
-		    // pthread_join(p1[i - 1], NULL);
+			// ft_putnbr_fd(time, 1);
+			fprintf(stderr, "new ==> %zu  old ===> %zu \n" , time - p[i]->last_time_eat, p[i]->time_to_die);
+			// ft_putchar_fd(' ', 1);
+			if ((time - p[i]->last_time_eat) > p[i]->time_to_die)
+			{
+				ft_print("died", ph, p[i]->id);
+				exit(0);
+			}
 		}
 		i = 0;
 		 while (++i <= ph->nbr_ph)
@@ -297,12 +302,7 @@ if (ac > 4)
 			int k = pthread_join(p1[i - 1], NULL);
 			// printf("join == [%d] i == [%d]\n", k, i);
 			// ft_putnbr_fd(i, 1);
-			if (time - p[i]->last_time_eat > p[i]->time_to_die)
-			{
-				//fprintf(stderr,"##> %zu\n", time - p[i]->last_time_eat);
-				ft_print("died", ph, p[i]->id);
-				exit(0);
-			}
+
         }
 
 	}
