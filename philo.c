@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:01:49 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/18 19:56:51 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/19 21:31:01 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ typedef struct s_philosopher
 	int time_to_die;
 	int time_to_eat;
 	int time_to_sleep;
+	size_t last_time_eat;
 }					t_philosopher;
 
 void	ft_putchar_fd(char c, int fd)
@@ -104,7 +105,17 @@ void	ft_putnbr_fd(int nbr, int fd)
 // }
 void ft_print(char *m, t_philo *ph, int i)
 {
+	struct timeval tv;
+    struct timezone tz;
+    size_t time;
+    size_t time2;
+    size_t res;
 	pthread_mutex_lock(&ph->message);
+	gettimeofday(&tv,&tz);
+    time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
+	ft_putnbr_fd(time, 1);
+	// fprintf(stderr, "%zu" , time);
+	ft_putchar_fd(' ', 1);
 	ft_putstr_fd("philo ", 1);
 	ft_putnbr_fd(i, 1);
 	ft_putstr_fd(" ", 1);
@@ -151,7 +162,11 @@ void *fun2(void *ikhan)
 {
 	// t_philo *ph = (t_philo *)ikhan;
 	t_philosopher  *p = (t_philosopher *)ikhan;
-	
+	    struct timeval tv;
+    struct timezone tz;
+    size_t time;
+    size_t time2;
+    size_t res;
 
 	// if (ph->id == 1)
 	// {
@@ -169,6 +184,10 @@ void *fun2(void *ikhan)
 	ft_print("has taking a fork", ph, p->id);
 	ft_print("is eteing", ph, p->id);
 	mysleep(p->time_to_eat);
+    gettimeofday(&tv,&tz);
+    p->last_time_eat = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
+///	fprintf(stderr,"@@@@> %zu", p->last_time_eat);
+	//ft_putstr_fd("\n", 1);
 	pthread_mutex_unlock(&p->mut[(p->id) % p->nbr_ph]);
 	pthread_mutex_unlock(&p->mut[(p->id - 1)]);
 	ft_print("is sleeping", ph, p->id);
@@ -205,6 +224,12 @@ int main(int ac, char *av[])
 	int nbr_ph;
 	t_philosopher **p;
 	pthread_t *p1;
+    struct timeval tv;
+    struct timezone tz;
+    size_t time;
+    size_t time2;
+    size_t res;
+
 
 
 if (ac > 4)
@@ -241,7 +266,9 @@ if (ac > 4)
 		p[k]->message = ph->message;
 		p[k]->time_to_die = ph->time_to_die;
 		p[k]->time_to_eat = ph->time_to_eat;
-		p[k]->time_to_sleep = ph->time_to_sleep;
+		p[k]->time_to_sleep = ph->time_to_sleep;    
+		gettimeofday(&tv,&tz);
+		p[k]->last_time_eat = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
 	}
 	
 
@@ -254,7 +281,12 @@ if (ac > 4)
 		while (++i < ph->nbr_ph)
 		{
 			pthread_create(&p1[i], NULL, fun2, p[i]);
+			
 			usleep(100);
+    		gettimeofday(&tv,&tz);
+    		time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
+			//fprintf(stderr,"==> %zu\n", time);
+
 		    // pthread_join(p1[i - 1], NULL);
 		}
 		i = 0;
@@ -265,6 +297,12 @@ if (ac > 4)
 			int k = pthread_join(p1[i - 1], NULL);
 			// printf("join == [%d] i == [%d]\n", k, i);
 			// ft_putnbr_fd(i, 1);
+			if (time - p[i]->last_time_eat > p[i]->time_to_die)
+			{
+				//fprintf(stderr,"##> %zu\n", time - p[i]->last_time_eat);
+				ft_print("died", ph, p[i]->id);
+				exit(0);
+			}
         }
 
 	}
