@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:01:49 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/20 19:05:13 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/23 18:47:40 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,13 @@ typedef struct s_philosopher
 	pthread_t *p;
 	pthread_mutex_t *mut;
 	pthread_mutex_t message;
+	int iseating;
 	int nbr_ph;
 	size_t time_to_die;
 	size_t time_to_eat;
 	size_t time_to_sleep;
 	size_t last_time_eat;
+	
 	long long start_time;
 }					t_philosopher;
 
@@ -104,6 +106,46 @@ void	ft_putnbr_fd(int nbr, int fd)
 //     }
 //     return (NULL);*/
 // }
+size_t get_time()
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return ((tv.tv_usec / 1000) + (tv.tv_sec * 1000));
+}
+void ft_print2(char *m, t_philo *ph, int i, int c, t_philosopher *p)
+{
+	struct timeval tv;
+    struct timezone tz;
+    size_t time;
+    size_t time2;
+    size_t res;
+
+	pthread_mutex_lock(&ph->message);
+	/*if (c == 1)
+		ft_putstr_fd("\x1B[37m", 1);
+	else if (c == 2)
+		ft_putstr_fd("\x1B[37m", 1);
+	else if (c == 3)
+		ft_putstr_fd("\x1B[33m", 1);
+	else if (c == 4)
+		ft_putstr_fd("\x1B[34m", 1);
+	else if (c == 5)
+		ft_putstr_fd("\x1B[35m", 1);
+	else if (c == 6)
+		ft_putstr_fd("\x1B[36m", 1);*/
+	gettimeofday(&tv,&tz);
+    time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000) - p->start_time;
+	ft_putnbr_fd(time, 1);
+	// fprintf(stderr, "%zu " , time);
+	ft_putchar_fd(' ', 1);
+	ft_putstr_fd("philo ", 1);
+	ft_putnbr_fd(i, 1);
+	ft_putstr_fd(" ", 1);
+	ft_putstr_fd(m, 1);
+	ft_putstr_fd("\n", 1);
+	exit(0);
+	pthread_mutex_unlock(&ph->message);
+}
 void ft_print(char *m, t_philo *ph, int i, int c, t_philosopher *p)
 {
 	struct timeval tv;
@@ -113,10 +155,10 @@ void ft_print(char *m, t_philo *ph, int i, int c, t_philosopher *p)
     size_t res;
 
 	pthread_mutex_lock(&ph->message);
-	if (c == 1)
-		ft_putstr_fd("\x1B[31m", 1);
+	/*if (c == 1)
+		ft_putstr_fd("\x1B[37m", 1);
 	else if (c == 2)
-		ft_putstr_fd("\x1B[32m", 1);
+		ft_putstr_fd("\x1B[37m", 1);
 	else if (c == 3)
 		ft_putstr_fd("\x1B[33m", 1);
 	else if (c == 4)
@@ -124,7 +166,7 @@ void ft_print(char *m, t_philo *ph, int i, int c, t_philosopher *p)
 	else if (c == 5)
 		ft_putstr_fd("\x1B[35m", 1);
 	else if (c == 6)
-		ft_putstr_fd("\x1B[36m", 1);
+		ft_putstr_fd("\x1B[36m", 1);*/
 	gettimeofday(&tv,&tz);
     time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000) - p->start_time;
 	ft_putnbr_fd(time, 1);
@@ -140,25 +182,15 @@ void ft_print(char *m, t_philo *ph, int i, int c, t_philosopher *p)
 void    mysleep(int usecond)
 {
     struct timeval tv;
-    struct timezone tz;
     size_t time;
-    size_t time2;
-    size_t res;
+    gettimeofday(&tv, NULL);
+    time = get_time();
 
-    gettimeofday(&tv,&tz);
-    time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
-
-    
+    //res = time;
     usleep((usecond - 10) * 1000);
     
-    // time2 = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
-    // res = time2 - time;
-    while (res != usecond)
+    while ((get_time() - time) < usecond)
     {
-        gettimeofday(&tv,&tz);
-        time2 = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
-           res = time2 - time;
-        
     }
     // ft_putnbr_fd(time, 1);
     // ft_putstr_fd("\n", 1);
@@ -192,26 +224,27 @@ void *fun2(void *ikhan)
 
 	// ft_putnbr_fd(p->id, 1);
 	// ft_putstr_fd("\n", 1);
+	p->iseating = 0;
 	while (1)
 	{
-		
-	
-	
 	pthread_mutex_lock(&p->mut[(p->id - 1)]);
 	ft_print("has taking a fork", ph, p->id, 6, p);
 	pthread_mutex_lock(&p->mut[(p->id) % p->nbr_ph]);
-	ft_print("has taking a fork", ph, p->id, 2, p);	   		
-	gettimeofday(&tv,&tz);
+	ft_print("has taking a fork", ph, p->id, 2, p);
+	p->iseating = 1;
+	ft_print("is eating", ph, p->id, 3, p);	
+	gettimeofday(&tv, NULL);
     p->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
-	ft_print("is eteing", ph, p->id, 3, p);
 	mysleep(p->time_to_eat);
 
 ///	fprintf(stderr,"@@@@> %zu", p->last_time_eat);
 	//ft_putstr_fd("\n", 1);
-
+	
 	pthread_mutex_unlock(&p->mut[(p->id) % p->nbr_ph]);
 	pthread_mutex_unlock(&p->mut[(p->id - 1)]);
 	ft_print("is sleeping", ph, p->id, 4, p);
+	p->iseating = 0;
+	
 	mysleep(p->time_to_sleep);    
 
 	ft_print("thinking", ph, p->id, 5, p);
@@ -293,11 +326,9 @@ if (ac > 4)
 		p[k]->p = p1;
 		p[k]->mut = ph->mut;
 		p[k]->message = ph->message;
-		p[k]->time_to_die = ph->time_to_die;
+		p[k]->time_to_die = ph->time_to_die * 1000;
 		p[k]->time_to_eat = ph->time_to_eat;
 		p[k]->time_to_sleep = ph->time_to_sleep;    
-		gettimeofday(&tv,&tz);
-		p[k]->last_time_eat = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
 	}
 	
 
@@ -313,27 +344,23 @@ if (ac > 4)
 			p[i]->start_time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
 			p[i]->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
 			pthread_create(&p1[i], NULL, fun2, p[i]);
-			
 			usleep(100);
- 
 		}
 		while (1)
 		{
 			int k = -1;
 			while (++k < ph->nbr_ph)
 			{		
-				gettimeofday(&tv,&tz);
-    			time = (tv.tv_usec) + (tv.tv_sec * 1000000);
-				// ft_putnbr_fd(time, 1);
-				//fprintf(stderr, "new ==> %zu  old ===> %zu \n" , time - p[i]->last_time_eat, p[i]->time_to_die);
-				// ft_putchar_fd(' ', 1);
-				if ((time - p[k]->last_time_eat) > (p[k]->time_to_die * 1000))
+				gettimeofday(&tv,NULL);
+				// fprintf(stderr, "", ÷);
+				if (!p[k]->iseating && (((tv.tv_usec) + (tv.tv_sec * 1000000)) - p[k]->last_time_eat) >= (p[k]->time_to_die))
 				{
-					ft_print("died", ph, p[k]->id, 1, p[k]);
-					exit(0);
+					ft_print2("died", ph, p[k]->id, 1, p[k]);
+					return (0);
 				}
+				usleep(10);
 			}
-			usleep(10);
+			
 		}	
 		//wait__
 		i = 0;
