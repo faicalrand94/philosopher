@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:01:49 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/25 11:44:02 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/25 21:09:23 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,6 +232,10 @@ void *fun2(void *ikhan)
 	pthread_mutex_lock(&p->mut[(p->id) % p->nbr_ph]);
 	ft_print("has taking a fork", ph, p->id, 2, p);
 	pthread_mutex_lock(&die);
+	if (ph->time_to_die == ph->time_to_eat + ph->time_to_sleep)
+	{
+		usleep(10);
+	}
 	p->iseating = 1;
 	ft_print("is eating", ph, p->id, 3, p);	
 	gettimeofday(&tv, NULL);
@@ -356,10 +360,7 @@ if (ac > 4)
 			{		
 				gettimeofday(&tv,NULL);
 				// fprintf(stderr, "", ÷);
-				if (ph->time_to_die == ph->time_to_eat + ph->time_to_sleep)
-				{
-					usleep(10);
-				}
+		 
 				//pthread_mutex_lock(&die);
 
 				if (!p[k]->iseating && (((tv.tv_usec) + (tv.tv_sec * 1000000)) - p[k]->last_time_eat) >= (p[k]->time_to_die))
