@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:01:49 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/23 18:47:40 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/25 11:44:02 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int i = 0;
 int d = 0;
 int t[2];
 // pthread_mutex_t mut;
-
+pthread_mutex_t die;
 typedef struct s_philo
 {
 	int id;
@@ -231,11 +231,13 @@ void *fun2(void *ikhan)
 	ft_print("has taking a fork", ph, p->id, 6, p);
 	pthread_mutex_lock(&p->mut[(p->id) % p->nbr_ph]);
 	ft_print("has taking a fork", ph, p->id, 2, p);
+	pthread_mutex_lock(&die);
 	p->iseating = 1;
 	ft_print("is eating", ph, p->id, 3, p);	
 	gettimeofday(&tv, NULL);
     p->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
 	mysleep(p->time_to_eat);
+	
 
 ///	fprintf(stderr,"@@@@> %zu", p->last_time_eat);
 	//ft_putstr_fd("\n", 1);
@@ -243,8 +245,8 @@ void *fun2(void *ikhan)
 	pthread_mutex_unlock(&p->mut[(p->id) % p->nbr_ph]);
 	pthread_mutex_unlock(&p->mut[(p->id - 1)]);
 	ft_print("is sleeping", ph, p->id, 4, p);
+	pthread_mutex_unlock(&die);
 	p->iseating = 0;
-	
 	mysleep(p->time_to_sleep);    
 
 	ft_print("thinking", ph, p->id, 5, p);
@@ -291,7 +293,7 @@ int main(int ac, char *av[])
     size_t time;
     size_t time2;
     size_t res;
-
+	
 
 
 if (ac > 4)
@@ -311,6 +313,7 @@ if (ac > 4)
 	i = -1;	
 	ph->mut = malloc(sizeof(pthread_mutex_t) * ph->nbr_ph);
 	pthread_mutex_init(&ph->message, NULL);
+	pthread_mutex_init(&die, NULL);
 	while (++i < ph->nbr_ph)
 	{
 		pthread_mutex_init(&ph->mut[i], NULL);
@@ -353,11 +356,18 @@ if (ac > 4)
 			{		
 				gettimeofday(&tv,NULL);
 				// fprintf(stderr, "", ÷);
+				if (ph->time_to_die == ph->time_to_eat + ph->time_to_sleep)
+				{
+					usleep(10);
+				}
+				//pthread_mutex_lock(&die);
+
 				if (!p[k]->iseating && (((tv.tv_usec) + (tv.tv_sec * 1000000)) - p[k]->last_time_eat) >= (p[k]->time_to_die))
 				{
 					ft_print2("died", ph, p[k]->id, 1, p[k]);
 					return (0);
 				}
+				//pthread_mutex_unlock(&die);
 				usleep(10);
 			}
 			
