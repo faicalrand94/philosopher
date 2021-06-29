@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:01:49 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/29 18:54:15 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/29 19:05:46 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ typedef struct s_philo
 	size_t nbr_eat;
 	t_philosopher	**p;
 	int time_each_eat;
+	pthread_t *p1;
 }					t_philo;
 t_philo     *ph;
 void	ft_putchar_fd(char c, int fd)
@@ -101,17 +102,7 @@ void	ft_putnbr_fd(int nbr, int fd)
 		ft_putchar_fd(num % 10 + 48, fd);
 	}
 }
-// void *fun(void * ikhan)
-// {
-//    /* for (int j = 0; j < 1000000; j++)
-//     {
-//         pthread_mutex_lock(&mut);
-//         i++;
-//         pthread_mutex_unlock(&mut);
 
-//     }
-//     return (NULL);*/
-// }
 size_t get_time()
 {
 	struct timeval tv;
@@ -210,26 +201,15 @@ void    mysleep(int usecond)
     // printf("result ==> %lu", res);
 
 }
-void *fun2(void *ikhan)
+void *fun2(void *ag)
 {
-	// t_philo *ph = (t_philo *)ikhan;
-	t_philosopher  *p = (t_philosopher *)ikhan;
+	t_philosopher  *p = (t_philosopher *)ag;
 	struct timeval tv;
     struct timezone tz;
     size_t time;
     size_t time2;
     size_t res;
 
-	// if (ph->id == 1)
-	// {
-	
-	// if (ph->id == 1)
-	//     fprintf(stderr, "\x1B[31mphilosopher number %d\n", ph->id);
-	// else if (ph->id == 2)
-	//     fprintf(stderr, "\x1B[32mphilosopher number %d\n", ph->id);
-
-	// ft_putnbr_fd(p->id, 1);
-	// ft_putstr_fd("\n", 1);
 	p->iseating = 0;
 	while (1)
 	{
@@ -237,31 +217,18 @@ void *fun2(void *ikhan)
 	ft_print("has taking a fork", ph, p->id, 6, p);
 	pthread_mutex_lock(&p->mut[(p->id) % p->nbr_ph]);
 	ft_print("has taking a fork", ph, p->id, 2, p);
-//	pthread_mutex_lock(&die);
-	// if (ph->time_to_die == ph->time_to_eat + ph->time_to_sleep)
-	// {
-	// 	usleep(10);
-	// }
 	p->iseating = 1;
 	ft_print("is eating", ph, p->id, 3, p);	
 	(*p->time_each_eat)++;
 	gettimeofday(&tv, NULL);
     p->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
 	mysleep(p->time_to_eat);
-	
-
-///	fprintf(stderr,"@@@@> %zu", p->last_time_eat);
-	//ft_putstr_fd("\n", 1);
-	
 	pthread_mutex_unlock(&p->mut[(p->id) % p->nbr_ph]);
 	pthread_mutex_unlock(&p->mut[(p->id - 1)]);
 	ft_print("is sleeping", ph, p->id, 4, p);
-//	pthread_mutex_unlock(&die);
 	p->iseating = 0;
 	mysleep(p->time_to_sleep);    
-
 	ft_print("thinking", ph, p->id, 5, p);
-	
 }
 	   
 
@@ -296,13 +263,13 @@ t_philo    *initial_ph()
 
 int main(int ac, char *av[])
 {
-	int nbr_ph;
-	pthread_t *p1;
+
+
     struct timeval tv;
     struct timezone tz;
     size_t time;
-    size_t time2;
-    size_t res;
+
+
 	int k;
 		int i;
 
@@ -324,7 +291,7 @@ int main(int ac, char *av[])
 		else
 			ph->nbr_eat = -2;
 		ph->time_each_eat = 0;
-		p1 = malloc(sizeof(pthread_t) * ph->nbr_ph);
+		ph->p1 = malloc(sizeof(pthread_t) * ph->nbr_ph);
 		i = -1;	
 		ph->mut = malloc(sizeof(pthread_mutex_t) * ph->nbr_ph);
 		pthread_mutex_init(&ph->message, NULL);
@@ -337,7 +304,7 @@ int main(int ac, char *av[])
 			ph->p[k] = malloc(sizeof(t_philosopher));
 			ph->p[k]->id = k + 1;
 			ph->p[k]->nbr_ph = ph->nbr_ph;
-			ph->p[k]->p = p1;
+			ph->p[k]->p = ph->p1;
 			ph->p[k]->mut = ph->mut;
 			ph->p[k]->message = ph->message;
 			ph->p[k]->time_to_die = ph->time_to_die * 1000;
@@ -351,7 +318,7 @@ int main(int ac, char *av[])
 			gettimeofday(&tv,&tz);
 			ph->p[i]->start_time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
 			ph->p[i]->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
-			pthread_create(&p1[i], NULL, fun2, ph->p[i]);
+			pthread_create(&ph->p1[i], NULL, fun2, ph->p[i]);
 			usleep(100);
 		}
 		i = -1;
@@ -375,7 +342,7 @@ int main(int ac, char *av[])
 		}	
 		i = 0;
 		while (++i <= ph->nbr_ph)
-			k = pthread_join(p1[i - 1], NULL);
+			k = pthread_join(ph->p1[i - 1], NULL);
 	}
 	return (0);
 }
