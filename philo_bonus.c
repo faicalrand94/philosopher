@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philo.c                                            :+:      :+:    :+:   */
+/*   philo_bonus.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/16 17:01:49 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/29 18:54:15 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/26 18:16:14 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,19 @@ int d = 0;
 int t[2];
 // pthread_mutex_t mut;
 pthread_mutex_t die;
-
-
+typedef struct s_philo
+{
+	int id;
+	pthread_mutex_t *mut;
+	pthread_mutex_t message;
+	int iseating;
+	int issleeping;
+	int nbr_ph;
+	size_t time_to_die;
+	size_t time_to_eat;
+	size_t time_to_sleep;
+}					t_philo;
+t_philo     *ph;
 
 typedef struct s_philosopher
 {
@@ -42,27 +53,10 @@ typedef struct s_philosopher
 	size_t time_to_eat;
 	size_t time_to_sleep;
 	size_t last_time_eat;
-	int *time_each_eat;
+	
 	long long start_time;
 }					t_philosopher;
 
-
-typedef struct s_philo
-{
-	int id;
-	pthread_mutex_t *mut;
-	pthread_mutex_t message;
-	int iseating;
-	int issleeping;
-	int nbr_ph;
-	size_t time_to_die;
-	size_t time_to_eat;
-	size_t time_to_sleep;
-	size_t nbr_eat;
-	t_philosopher	**p;
-	int time_each_eat;
-}					t_philo;
-t_philo     *ph;
 void	ft_putchar_fd(char c, int fd)
 {
 	write(fd, &c, 1);
@@ -237,14 +231,13 @@ void *fun2(void *ikhan)
 	ft_print("has taking a fork", ph, p->id, 6, p);
 	pthread_mutex_lock(&p->mut[(p->id) % p->nbr_ph]);
 	ft_print("has taking a fork", ph, p->id, 2, p);
-//	pthread_mutex_lock(&die);
-	// if (ph->time_to_die == ph->time_to_eat + ph->time_to_sleep)
-	// {
-	// 	usleep(10);
-	// }
+	pthread_mutex_lock(&die);
+	if (ph->time_to_die == ph->time_to_eat + ph->time_to_sleep)
+	{
+		usleep(10);
+	}
 	p->iseating = 1;
 	ft_print("is eating", ph, p->id, 3, p);	
-	(*p->time_each_eat)++;
 	gettimeofday(&tv, NULL);
     p->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
 	mysleep(p->time_to_eat);
@@ -256,7 +249,7 @@ void *fun2(void *ikhan)
 	pthread_mutex_unlock(&p->mut[(p->id) % p->nbr_ph]);
 	pthread_mutex_unlock(&p->mut[(p->id - 1)]);
 	ft_print("is sleeping", ph, p->id, 4, p);
-//	pthread_mutex_unlock(&die);
+	pthread_mutex_unlock(&die);
 	p->iseating = 0;
 	mysleep(p->time_to_sleep);    
 
@@ -297,85 +290,106 @@ t_philo    *initial_ph()
 int main(int ac, char *av[])
 {
 	int nbr_ph;
+	t_philosopher **p;
 	pthread_t *p1;
     struct timeval tv;
     struct timezone tz;
     size_t time;
     size_t time2;
     size_t res;
-	int k;
-		int i;
+	
 
 
-	if (ac > 4)
+if (ac > 4)
+{
+	int i2 = 2;
+	t[0] = 0;
+	t[1] = 0;
+ 
+	ph = initial_ph();
+	
+	ph->nbr_ph = atoi(av[1]);
+	ph->time_to_die = atoi(av[2]);
+	ph->time_to_eat = atoi(av[3]);
+	ph->time_to_sleep = atoi(av[4]);
+	int i;
+	p1 = malloc(sizeof(pthread_t) * ph->nbr_ph);
+	i = -1;	
+	ph->mut = malloc(sizeof(pthread_mutex_t) * ph->nbr_ph);
+	pthread_mutex_init(&ph->message, NULL);
+	pthread_mutex_init(&die, NULL);
+	while (++i < ph->nbr_ph)
 	{
-		int i2 = 2;
+		pthread_mutex_init(&ph->mut[i], NULL);
+	}
+	
+	p = malloc(sizeof(t_philosopher *) * ph->nbr_ph);
+	int k = -1;
+	while (++k < ph->nbr_ph)
+	{
+		p[k] = malloc(sizeof(t_philosopher));
+		p[k]->id = k + 1;
+		p[k]->nbr_ph = ph->nbr_ph;
+		p[k]->p = p1;
+		p[k]->mut = ph->mut;
+		p[k]->message = ph->message;
+		p[k]->time_to_die = ph->time_to_die * 1000;
+		p[k]->time_to_eat = ph->time_to_eat;
+		p[k]->time_to_sleep = ph->time_to_sleep;    
+	}
+	
 
 
-		ph = initial_ph();
-		ph->nbr_ph = atoi(av[1]);
-		ph->time_to_die = atoi(av[2]);
-		ph->time_to_eat = atoi(av[3]);
-		ph->time_to_sleep = atoi(av[4]);
-		if (ac == 6)
-		{
-			ph->nbr_eat = atoi(av[5]);
-		}
-		else
-			ph->nbr_eat = -2;
-		ph->time_each_eat = 0;
-		p1 = malloc(sizeof(pthread_t) * ph->nbr_ph);
-		i = -1;	
-		ph->mut = malloc(sizeof(pthread_mutex_t) * ph->nbr_ph);
-		pthread_mutex_init(&ph->message, NULL);
-		while (++i < ph->nbr_ph)
-			pthread_mutex_init(&ph->mut[i], NULL);
-		ph->p = malloc(sizeof(t_philosopher *) * ph->nbr_ph);
-		k = -1;
-		while (++k < ph->nbr_ph)
-		{
-			ph->p[k] = malloc(sizeof(t_philosopher));
-			ph->p[k]->id = k + 1;
-			ph->p[k]->nbr_ph = ph->nbr_ph;
-			ph->p[k]->p = p1;
-			ph->p[k]->mut = ph->mut;
-			ph->p[k]->message = ph->message;
-			ph->p[k]->time_to_die = ph->time_to_die * 1000;
-			ph->p[k]->time_to_eat = ph->time_to_eat;
-			ph->p[k]->time_to_sleep = ph->time_to_sleep;
-			ph->p[k]->time_each_eat = &ph->time_each_eat;
-		}
+	
+	// while (1)
+	// {
+		
 		i = -1;
 		while (++i < ph->nbr_ph)
 		{
 			gettimeofday(&tv,&tz);
-			ph->p[i]->start_time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
-			ph->p[i]->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
-			pthread_create(&p1[i], NULL, fun2, ph->p[i]);
+			p[i]->start_time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
+			p[i]->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
+			pthread_create(&p1[i], NULL, fun2, p[i]);
 			usleep(100);
 		}
-		i = -1;
 		while (1)
 		{
-			if (ph->time_each_eat >= (ph->nbr_eat * ph->nbr_ph))
-			{
-				return (0);
-			}
 			int k = -1;
 			while (++k < ph->nbr_ph)
 			{		
 				gettimeofday(&tv,NULL);
-				if (!ph->p[k]->iseating && (((tv.tv_usec) + (tv.tv_sec * 1000000)) - ph->p[k]->last_time_eat) >= (ph->p[k]->time_to_die))
+				// fprintf(stderr, "", ÷);
+		 
+				//pthread_mutex_lock(&die);
+
+				if (!p[k]->iseating && (((tv.tv_usec) + (tv.tv_sec * 1000000)) - p[k]->last_time_eat) >= (p[k]->time_to_die))
 				{
-					ft_print2("died", ph, ph->p[k]->id, 1, ph->p[k]);
+					ft_print2("died", ph, p[k]->id, 1, p[k]);
 					return (0);
 				}
+				//pthread_mutex_unlock(&die);
 				usleep(10);
 			}
+			
 		}	
+		//wait__
 		i = 0;
-		while (++i <= ph->nbr_ph)
-			k = pthread_join(p1[i - 1], NULL);
-	}
+		 while (++i <= ph->nbr_ph)
+        {
+            // ph->id = i;
+            // pthread_create(&p1[i - 1], NULL, fun2, ph);
+			int k = pthread_join(p1[i - 1], NULL);
+			// printf("join == [%d] i == [%d]\n", k, i);
+			// ft_putnbr_fd(i, 1);
+
+        }
+
+	// }
+}
+	
+	
+
+	//pthread_mutex_destroy(&mut);
 	return (0);
 }
