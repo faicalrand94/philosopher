@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/30 17:26:44 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/07/01 10:05:03 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/07/01 13:12:31 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void	mysleep(int usecond)
 	gettimeofday(&tv, NULL);
 	time = get_time();
 	usleep((usecond - 10) * 1000);
-	while ((get_time() - time) < (usecond * 1000))
+	while ((get_time() - time) < usecond * 1000)
 	{
 	}
 }

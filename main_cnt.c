@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/30 21:11:06 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/07/01 11:02:39 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/06/30 21:24:28 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,16 +34,16 @@ int	check_die(t_philo *ph)
 			return (0);
 		k = -1;
 		while (++k < ph->nbr_ph)
-		{
-			gettimeofday(&tv, &tz);
+		{		
+			gettimeofday(&tv, NULL);
 			if (!ph->p[k]->iseating
 				&& (((tv.tv_usec) + (tv.tv_sec * 1000000))
-					- ph->p[k]->last_time_eat) > (ph->p[k]->time_to_die))
+					- ph->p[k]->last_time_eat) >= (ph->p[k]->time_to_die))
 			{
-				fprintf(stderr,"%zu\n", ph->p[k]->last_time_eat);
 				ft_print2("died", ph->p[k]->id, 1, ph->p[k]);
 				return (0);
 			}
+			usleep(10);
 		}
 	}
 	return (1);
@@ -58,7 +58,7 @@ void	loop_creat_thread(t_philo *ph)
 	i = -1;
 	while (++i < ph->nbr_ph)
 	{
-		gettimeofday(&tv, NULL);
+		gettimeofday(&tv, &tz);
 		ph->p[i]->start_time = (tv.tv_usec / 1000) + (tv.tv_sec * 1000);
 		ph->p[i]->last_time_eat = (tv.tv_usec) + (tv.tv_sec * 1000000);
 		pthread_create(&ph->p1[i], NULL, philosopher, ph->p[i]);

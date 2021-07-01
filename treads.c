@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/30 17:24:14 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/07/01 10:33:56 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/07/01 13:13:43 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ void	*philosopher(void *ag)
 
 	p = (t_philosopher *)ag;
 	p->iseating = 0;
-	gettimeofday(&tv, NULL);
 	while (1)
 	{
 		pthread_mutex_lock(&p->mut[(p->id - 1)]);
