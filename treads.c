@@ -6,7 +6,7 @@
 /*   By: fbouibao <fbouibao@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/06/30 17:24:14 by fbouibao          #+#    #+#             */
-/*   Updated: 2021/06/30 21:32:38 by fbouibao         ###   ########.fr       */
+/*   Updated: 2021/07/01 10:33:56 by fbouibao         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,13 @@ void	*philosopher(void *ag)
 
 	p = (t_philosopher *)ag;
 	p->iseating = 0;
+	gettimeofday(&tv, NULL);
 	while (1)
 	{
 		pthread_mutex_lock(&p->mut[(p->id - 1)]);
-		ft_print("has taking a fork", p->id, 6, p);
+		ft_print("has taken a fork", p->id, 6, p);
 		pthread_mutex_lock(&p->mut[(p->id) % p->nbr_ph]);
-		ft_print("has taking a fork", p->id, 2, p);
+		ft_print("has taken a fork", p->id, 2, p);
 		p->iseating = 1;
 		ft_print("is eating", p->id, 3, p);
 		(*p->time_each_eat)++;
@@ -37,7 +38,7 @@ void	*philosopher(void *ag)
 		ft_print("is sleeping", p->id, 4, p);
 		p->iseating = 0;
 		mysleep(p->time_to_sleep);
-		ft_print("thinking", p->id, 5, p);
+		ft_print("is thinking", p->id, 5, p);
 	}
 	return (NULL);
 }
